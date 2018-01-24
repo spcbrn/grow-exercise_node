@@ -116,7 +116,7 @@ module.exports = {
           let { next, results } = resp1.data;
           nexturl = next;
           //after pulling off the planet list (results) and re-assigning `nexturl`, loop through each planet,
-          //and map it's residents' addresses to a property on our cencus object that matches the planet's name
+          //and map it's residents' addresses to a property on our census object that matches the planet's name
           for (let i = 0; i < results.length; i++) {
             planetCensus[results[i].name] = results[i].residents.map(c1 => {
               //create a hash property that matches the current resident's address (c1)
