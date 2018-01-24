@@ -1,3 +1,9 @@
+
+/*
+The REST module is a decorator function into which we pass our app (and other deps/parameters if needed)
+and which contains our endpoints.
+Request handling is deferred to the appropriate controller (in this case just one REST controller)
+*/
 module.exports = (app, path) => {
   const restCtrl = require('./restController');
 
@@ -5,6 +11,7 @@ module.exports = (app, path) => {
   app.get('/character/:name', restCtrl.getCharacter);
   app.get('/planetresidents', restCtrl.getPlanetResidents);
 
+  //A fallback endpoint to serve up a predictable response to invalid requests.
   app.get('*', (req, res) => res.status(500).send('No resources found.'));
 
   console.log('REST endpoints initialized')

@@ -12,6 +12,12 @@ const app = express();
 
 //---------INITIALIZE SERVER----------//
 
+/*
+I recently began using a pure function approach to initializing a server,
+so in this case there is a function into which we pass whatever dependencies/variables
+are needed for each module (authentication, db connection, websockets, graphql etc...)
+For this server we need only a REST module to implement our endpoints
+*/
 const initialize_web_server = async (app, path, port) => {
     const {
 
