@@ -84,17 +84,15 @@ module.exports = {
   getPlanetResidents: async (req, res) => {
     const getPlanets = async () => {
       let planets;
-      let pageCount = 1;
-      await axios.get(`https://swapi.co/api/planets/?page=${pageCount}`)
+      await axios.get(`https://swapi.co/api/planets/?page=1`)
         .then(async resp => {
-          let next = resp.data.next
+          let next = resp.data.next;
           planets = resp.data.results;
-          pageCount++
           while (next) {
             await axios.get(next)
               .then(resp => {
-                planets = [...planets, ...resp.data.results]
-                next = resp.data.next
+                planets = [...planets, ...resp.data.results];
+                next = resp.data.next;
               })
               .catch(err => res.status(500).send(err))
           }
@@ -102,11 +100,39 @@ module.exports = {
         .catch(err => res.status(500).send(err))
       return planets.map(c => {
         let planetObj = {};
-        planetObj[c.name] = []
-        return planetObj
+        planetObj.name = c.name;
+        planetObj[c.name] = [];
+        planetObj.residents = c.residents;
+        return planetObj;
       });
     }
-    let planetList = await getPlanets()
+    const addResidents = async planets => {
+      let residentHash = {};
+      let populatedPlanets = await planets.map(c => {
+        let residentNames = [];
+        if (c.residents.length) {
+          c.residents.forEach(async url => {
+            if (residentHash[url]) {
+              residentNames.push(residentHash[url]);
+              return;
+            } else {
+              await axios.get(url)
+              .then(resp => {
+                console.log(url)
+                residentNames.push(resp.data.name);
+                residentHash[url] = resp.data.name;
+              })
+            }
+          })
+        }
+        c[c.name] = residentNames;
+        delete c.name;
+        delete c.residents;
+        return c;
+      })
+      return populatedPlanets;
+    }
+    let planetList = await addResidents(await getPlanets())
     res.status(200).send(planetList)
   }
 }
