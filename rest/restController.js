@@ -12,13 +12,11 @@ module.exports = {
     //going 3 characters deep for name-based sorting.
     let sortMethods = {
       default: list => list,
-      name: list => list.sort((a, b) => {
-                      return a.name.charCodeAt(0) === b.name.charCodeAt(0)
-                               ? a.name.charCodeAt(1) === b.name.charCodeAt(1)
-                                   ? a.name.charCodeAt(2) - b.name.charCodeAt(2)
-                                   : a.name.charCodeAt(1) - b.name.charCodeAt(1)
-                               : a.name.charCodeAt(0) - b.name.charCodeAt(0);
-                    }),
+      name: list => list.sort((a, b) => a.name.charCodeAt(0) === b.name.charCodeAt(0)
+                                          ? a.name.charCodeAt(1) === b.name.charCodeAt(1)
+                                              ? a.name.charCodeAt(2) - b.name.charCodeAt(2)
+                                              : a.name.charCodeAt(1) - b.name.charCodeAt(1)
+                                          : a.name.charCodeAt(0) - b.name.charCodeAt(0)),
       mass: list => list.sort((a, b) => a.mass - b.mass),
       height: list => list.sort((a, b) => a.height - b.height)
     }
