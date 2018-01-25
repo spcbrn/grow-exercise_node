@@ -2,9 +2,13 @@ const axios = require('axios')
     , ejs = require('ejs');
 
 module.exports = {
+
+
+
      ///////////////////////////////////////////////////
   /* getCharacterList serves the '/characters' endpoint */
      ///////////////////////////////////////////////////
+
   getCharacterList: async (req, res) => {
     //pull the value of the `sort` query string off of the query object and store it (or undefined)
     let { sort } = req.query;
@@ -41,9 +45,13 @@ module.exports = {
     let characterList = await accumResults(sortKey);
     res.status(200).send(characterList)
   },
+
+
+
      ////////////////////////////////////////////////////
   /* getCharacter serves the '/character/:name' endpoint */
     ////////////////////////////////////////////////////
+
   getCharacter: (req, res) => {
     //Pull the `name` param off of the params object.
     let { name } = req.params;
@@ -71,40 +79,19 @@ module.exports = {
       })
       .catch(err => res.status(500).send(err))
   },
+
+
+
       ///////////////////////////////////////////////////
   /* getCharacter serves the '/planetresidents' endpoint */
      ///////////////////////////////////////////////////
+
   getPlanetResidents: async (req, res) => {
     //create a hash to store residents' API addresses and names
     let residentHash = {};
 
-    //a function to make a final run through each planet and ensure all residents' names are listed
-    //if lazy-loading the residents isn't complete at the time of invokation, make blocking requests
-    //to populate the rest of the hash, then map the residents' names to their respective planets
-    const processResidents = async (residents, planets) => {
-      for (let address in residents) {
-        if (!residents[address]) residents[address] = await axios.get(address)
-                                            .then(resident => resident.data.name)
-                                            .catch(err => res.status(500).send(err));
-      }
-      if (planets) {
-        for (let name in planets) {
-          if (planets[name].length) planets[name] = planets[name].map(adress => residents[adress]);
-        }
-        return planets;
-      }
-    }
-
-    //a function to make non-blocking requests for information about each resident
-    //(start to get residents' data while we are still accumulating all of the planets)
-    const preloadResident = address => {
-      axios.get(address)
-        .then(resident => residentHash[address] = resident.data.name)
-        .catch(err => res.status(500).send(err));
-    }
-
     //a function to make consecutive blocking requests to the API until we have all of the planet objects
-    const processPlanets = async () => {
+    const processPlanetResidents = async residents => {
       let nexturl = 'https://swapi.co/api/planets/?page=1';
       let planetCensus = {};
       //as long as the current result offers a valid `next` paginated url, we will use it for our next request
@@ -116,10 +103,8 @@ module.exports = {
           //and map it's residents' addresses to a property on our census object that matches the planet's name
           for (let i = 0; i < results.length; i++) {
             planetCensus[results[i].name] = results[i].residents.map(address => {
-
-              residentHash[address] = 0;
-
-              preloadResident(address);
+              residents[address] = 0;
+              preloadResident(residents, address);
               //return the resident's address to the planet's residents array
               return address;
             });
@@ -127,13 +112,38 @@ module.exports = {
         })
         .catch(err => res.status(500).send(err));
       }
+
       //run the accumulated list of planets through final processing to ensure each resident's name is listed
-      let finalCensus = await processResidents(residentHash, planetCensus);
+      let finalCensus = await processResidents(residents, planetCensus);
       return finalCensus;
     }
 
-    let residentsByPlanet = await processPlanets();
-    res.status(200).send(residentsByPlanet)
+    //a function to make non-blocking requests for information about each resident
+    //(start to get residents' data while we are still accumulating all of the planets)
+    const preloadResident = (residents, address) => {
+      axios.get(address)
+      .then(resident => residents[address] = resident.data.name)
+      .catch(err => res.status(500).send(err));
+    }
 
+    //a function to make a final run through each planet and ensure all residents' names are listed
+    //if lazy-loading the residents isn't complete at the time of invokation, make blocking requests
+    //to populate the rest of the hash, then map the residents' names to their respective planets
+    const processResidents = async (residents, planets) => {
+      for (let address in residents) {
+        if (!residents[address]) residents[address] = await axios.get(address)
+        .then(resident => resident.data.name)
+        .catch(err => res.status(500).send(err));
+      }
+      if (planets) {
+        for (let name in planets) {
+          if (planets[name].length) planets[name] = planets[name].map(adress => residents[adress]);
+        }
+        return planets;
+      }
+    }
+
+    let residentsByPlanet = await processPlanetResidents(residentHash);
+    res.status(200).send(residentsByPlanet)
   }
 };
