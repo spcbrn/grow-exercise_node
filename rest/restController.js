@@ -26,7 +26,7 @@ module.exports = {
     //accumResults is an asynchronous function which will take in the desired sorting parameter, and make
     //blocking, paginated calls to the API to accumulate 50 character objects
     //once >=50 objects have been accumulated, it will apply a sort method if necessary and return the first 50
-    const accumResults = async key => {
+    const accumResults = async sort_key => {
       let characters = [];
       let pageCount = 1;
       while (characters.length < 50) {
@@ -35,7 +35,7 @@ module.exports = {
           .catch(err => res.status(500).send(err))
         pageCount++;
       }
-      return sortMethods[key](characters.splice(0, 50))
+      return sortMethods[sort_key](characters.splice(0, 50))
     };
 
     let characterList = await accumResults(sortKey);
