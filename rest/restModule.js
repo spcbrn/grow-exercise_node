@@ -12,7 +12,7 @@ module.exports = (app, path) => {
   app.get('/planetresidents', restCtrl.getPlanetResidents);
 
   //A fallback endpoint to serve up a predictable response to invalid requests.
-  app.get('*', (req, res) => res.status(500).send('Try \'/characters\', \'/character/:name\' or \'/planetresidents\'.'));
+  app.get('/*', (req, res) => res.status(500).send('Try \'/characters (/?sort=name/mass/height)\', \'/character/:name\' or \'/planetresidents\'.'));
 
   console.log('REST endpoints initialized')
 }
