@@ -109,6 +109,7 @@ module.exports = {
                                                   //return the resident's address to the planet's residents array
                                                   return address;
                                                 })
+                                                //if the planet has no residents, set the value to null
                                               : null;
           }
         })
@@ -129,7 +130,7 @@ module.exports = {
     }
 
     //a function to make a final run through each planet and ensure all residents' names are listed
-    //if lazy-loading the residents isn't complete at the time of invokation, make blocking requests
+    //if pre-loading the residents isn't complete at the time of invocation, make blocking requests
     //to populate the rest of the hash, then map the residents' names to their respective planets
     const processResidents = async (residents, planets) => {
       for (let address in residents) {
