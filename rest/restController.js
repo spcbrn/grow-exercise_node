@@ -102,12 +102,14 @@ module.exports = {
           //after pulling off the planet list (results) and re-assigning `nexturl`, loop through each planet,
           //and map it's residents' addresses to a property on our census object that matches the planet's name
           for (let i = 0; i < results.length; i++) {
-            planetCensus[results[i].name] = results[i].residents.map(address => {
-              residents[address] = 0;
-              preloadResident(residents, address);
-              //return the resident's address to the planet's residents array
-              return address;
-            });
+            planetCensus[results[i].name] = results[i].residents.length
+                                              ? results[i].residents.map(address => {
+                                                  residents[address] = 0;
+                                                  preloadResident(residents, address);
+                                                  //return the resident's address to the planet's residents array
+                                                  return address;
+                                                })
+                                              : null;
           }
         })
         .catch(err => res.status(500).send(err));
@@ -137,7 +139,7 @@ module.exports = {
       }
       if (planets) {
         for (let name in planets) {
-          if (planets[name].length) planets[name] = planets[name].map(adress => residents[adress]);
+          if (planets[name]) planets[name] = planets[name].map(adress => residents[adress]);
         }
         return planets;
       }
